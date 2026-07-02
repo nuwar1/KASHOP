@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using KASHOP.DAL.Data;
 using KASHOP.DAL.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace KASHOP.DAL.Repository
 {
@@ -20,6 +21,11 @@ namespace KASHOP.DAL.Repository
             await _context.AddAsync(category);
             await _context.SaveChangesAsync();
             return category;
+        }
+        public async Task<List<Category>> GetAllAsync()
+        {
+            var categories = await _context.Categories.Include(c => c.CategoryTranslations).ToListAsync();
+            return categories;
         }
     }
 }

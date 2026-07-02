@@ -32,5 +32,11 @@ namespace KASHOP.PL.Controllers
             return Ok();
         }
 
+        [HttpGet("")]
+        public async Task<IActionResult> GetAll()
+        {
+            var categories = await _categoryService.GetAllCategories();
+            return Ok(categories);
+        }
     }
 }
