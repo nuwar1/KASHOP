@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using KASHOP.DAL.Dto;
@@ -31,6 +32,12 @@ namespace KASHOP.BLL.Services
                 new string[] {nameof(Category.CategoryTranslations)}
                 );
             return categories.Adapt<List<CategoryResponse>>();
+        }
+
+        public async Task<CategoryResponse> GetCategory(Expression<Func<Category, bool>> filter)
+        {
+            var category = await _categoryRepository.GetOne(filter, new string[] {nameof(Category.CategoryTranslations)});
+            return category.Adapt<CategoryResponse>();
         }
     }
 }
