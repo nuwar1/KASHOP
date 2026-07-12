@@ -54,5 +54,14 @@ namespace KASHOP.PL.Controllers
                 return BadRequest();
             return Ok();
         }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, CategoryRequest request)
+        {
+            var category = await _categoryService.UpdateCategory(id, request);
+            if (category == null)
+                return NotFound();
+            return Ok(category);
+        }
     }
 }
