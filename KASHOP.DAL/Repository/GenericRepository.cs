@@ -49,5 +49,12 @@ namespace KASHOP.DAL.Repository
             }
             return await query.FirstOrDefaultAsync(filter);
         }
+
+        public async Task<bool> DeleteAsync(T entity)
+        {
+            _context.Remove(entity);
+            var affected = await _context.SaveChangesAsync();
+            return affected > 0;
+        }
     }
 }
