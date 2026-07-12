@@ -7,8 +7,9 @@ using KASHOP.DAL.Models;
 
 namespace KASHOP.DAL.Repository
 {
-    public interface ICategoryRepository: IGenericRepository<Category>
+    public interface IGenericRepository<T> where T : class
     {
-
+        Task<T> CreateAsync(T entity);
+        Task<List<T>> GetAllAsync(string[]? includes = null);
     }
 }
