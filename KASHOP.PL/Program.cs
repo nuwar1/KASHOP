@@ -1,7 +1,9 @@
 using System.Globalization;
 using KASHOP.BLL.Services;
 using KASHOP.DAL.Data;
+using KASHOP.DAL.Models;
 using KASHOP.DAL.Repository;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -40,8 +42,13 @@ namespace KASHOP.PL
                 options.RequestCultureProviders.Add(new AcceptLanguageHeaderRequestCultureProvider());
             });
 
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
+
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
+            builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
             var app = builder.Build();
             app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value);
