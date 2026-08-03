@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace KASHOP.DAL.Dto
 {
-    public class RegisterResponse
+    public class LoginRequest
     {
-        public string Message { get; set; }
-        public List<string> Errors {  get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
     }
 }
