@@ -13,7 +13,8 @@ using Microsoft.Extensions.Localization;
 namespace KASHOP.PL.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]    
+    [ApiController]
+    [Authorize]
     public class CategoriesController : ControllerBase
     {
         
@@ -27,7 +28,6 @@ namespace KASHOP.PL.Controllers
         }
 
         [HttpPost("")]
-        [Authorize]
         public async Task<IActionResult> Create(CategoryRequest request)
         {
             var response = await _categoryService.CreateCategory(request);
@@ -49,7 +49,6 @@ namespace KASHOP.PL.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
             var deleted = await _categoryService.DeleteCategory(id);
@@ -59,7 +58,6 @@ namespace KASHOP.PL.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize]
         public async Task<IActionResult> Update(int id, CategoryRequest request)
         {
             var category = await _categoryService.UpdateCategory(id, request);
