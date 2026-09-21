@@ -38,7 +38,7 @@ namespace KASHOP.PL.Controllers
         public async Task<IActionResult> GetAll()
         {
             var categories = await _categoryService.GetAllCategories();
-            return Ok(categories);
+            return Ok(new { _localizer["Success"].Value, categories });
         }
 
         [HttpGet("{id}")]

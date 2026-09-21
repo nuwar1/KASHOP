@@ -32,6 +32,7 @@ namespace KASHOP.BLL.Services
             var categories = await _categoryRepository.GetAllAsync(
                 new string[] {nameof(Category.CategoryTranslations)}
                 );
+           
             return categories.Adapt<List<CategoryResponse>>();
         }
 
