@@ -15,7 +15,7 @@ namespace KASHOP.BLL.Mapping
         public static void MapsterConfigRegister()
         {
             TypeAdapterConfig<Category, CategoryResponse>.NewConfig()
-            .Map(dist => dist.Name, src => src.CategoryTranslations.Where(t => t.Language == CultureInfo.CurrentUICulture.TwoLetterISOLanguageName)
+            .Map(dist => dist.Name, src => src.CategoryTranslations.Where(t => t.Language == CultureInfo.CurrentUICulture.Name)
             .Select(t => t.Name).FirstOrDefault());
         }
     }

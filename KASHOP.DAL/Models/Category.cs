@@ -10,5 +10,6 @@ namespace KASHOP.DAL.Models
     {
         public int Id { get; set; }
         public List<CategoryTranslation> CategoryTranslations { get; set; }
+        public List<Product> Products { get; set; }
     }
 }

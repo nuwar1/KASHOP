@@ -8,7 +8,7 @@ namespace KASHOP.PL.Extentions
         public static IServiceCollection AddLocalizationServices(this IServiceCollection services)
         {
             services.AddLocalization(options => options.ResourcesPath = "");
-            const string defaultCulture = "en-GB";
+            const string defaultCulture = "en";
             var supportedCultures = new[]
             {
                 new CultureInfo(defaultCulture),
