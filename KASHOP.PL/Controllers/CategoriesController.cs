@@ -30,40 +30,36 @@ namespace KASHOP.PL.Controllers
         [HttpPost("")]
         public async Task<IActionResult> Create(CategoryRequest request)
         {
-            var response = await _categoryService.CreateCategory(request);
-            return Ok();
+            var result = await _categoryService.CreateCategory(request);
+            return result.Success ? Ok(result) : BadRequest(result);
         }
 
         [HttpGet("")]
         public async Task<IActionResult> GetAll()
         {
-            var categories = await _categoryService.GetAllCategories();
-            return Ok(new { _localizer["Success"].Value, categories });
+            var result = await _categoryService.GetAllCategories();
+            return result.Success? Ok(result) : BadRequest(result);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var category = await _categoryService.GetCategory(c => c.Id == id);
-            return Ok(category);
+            var result = await _categoryService.GetCategory(c => c.Id == id);
+            return result.Success? Ok(result) : NotFound(result);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var deleted = await _categoryService.DeleteCategory(id);
-            if (!deleted)
-                return BadRequest();
-            return Ok();
+            var result = await _categoryService.DeleteCategory(id);
+            return result.Success ? Ok(result) : NotFound(result);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, CategoryRequest request)
         {
-            var category = await _categoryService.UpdateCategory(id, request);
-            if (category == null)
-                return NotFound();
-            return Ok(category);
+            var result = await _categoryService.UpdateCategory(id, request);
+            return result.Success ? Ok(result) : NotFound(result);
         }
     }
 }

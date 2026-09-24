@@ -5,23 +5,30 @@ using System.Net;
 using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace KASHOP.BLL.Common
 {
     public class EmailSender: IEmailSender
     {
+        private readonly IConfiguration _config;
+
+        public EmailSender(IConfiguration config)
+        {
+            _config = config;
+        }
         public Task SendEmailAsync(string email, string subject, string message)
         {
-            var client = new SmtpClient("smtp.gmail.com", 587)
+            var client = new SmtpClient(_config["EmailSettings:Host"], int.Parse(_config["EmailSettings:Port"]))
             {
                 EnableSsl = true,
                 UseDefaultCredentials = false,
-                Credentials = new NetworkCredential("nuwar0043@gmail.com", "oiok ofyu czik ljyt")
+                Credentials = new NetworkCredential(_config["EmailSettings:Email"], _config["EmailSettings:Password"])
             };
 
             return client.SendMailAsync(
                 new MailMessage(
-                    from: "nuwar0043@gmail.com",
+                    from: _config["EmailSettings:Email"],
                     to: email,
                     subject,
                     message)
