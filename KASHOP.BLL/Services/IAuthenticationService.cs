@@ -9,8 +9,8 @@ namespace KASHOP.BLL.Services
 {
     public interface IAuthenticationService
     {
-        Task<RegisterResponse> RegisterAsync(RegisterRequest request);
-        Task<LoginResponse> LoginAsync(LoginRequest request);
-        Task<bool> ConfirmEmail(ConfirmEmailRequest request);
+        Task<Result<RegisterResponse>> RegisterAsync(RegisterRequest request);
+        Task<Result<LoginResponse>> LoginAsync(LoginRequest request);
+        Task<Result<bool>> ConfirmEmail(ConfirmEmailRequest request);
     }
 }

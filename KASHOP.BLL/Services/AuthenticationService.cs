@@ -31,78 +31,146 @@ namespace KASHOP.BLL.Services
             _emailSender = emailSender;
             _config = config;
         }
-        public async Task<RegisterResponse> RegisterAsync(RegisterRequest request)
+        public async Task<Result<RegisterResponse>> RegisterAsync(RegisterRequest request)
         {
-            var user = request.Adapt<ApplicationUser>();
-            var result = await _userManager.CreateAsync(user, request.Password);
-            if (!result.Succeeded)
+            try
             {
-                return new RegisterResponse()
+                var user = request.Adapt<ApplicationUser>();
+                var result = await _userManager.CreateAsync(user, request.Password);
+                if (!result.Succeeded)
                 {
-                    Message = "Error",
-                    Errors = result.Errors.Select(e => e.Description).ToList()
-                };
-            }
-
-            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            token = Uri.EscapeDataString(token);
-            var emailUrl = $"https://localhost:7249/api/account/ConfirmEmail?token={token}&userId={user.Id}";
-            await _emailSender.SendEmailAsync(request.Email, "Confirm Email",
-                   $"""
+                    return new Result<RegisterResponse>()
+                    {
+                        Success = false,
+                        Message = "Failed to register",
+                        Data = new RegisterResponse() {
+                            Message = "Error",
+                            Errors = result.Errors.Select(e => e.Description).ToList()
+                        }
+                    };
+                }
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                token = Uri.EscapeDataString(token);
+                var emailUrl = $"https://localhost:7249/api/account/ConfirmEmail?token={token}&userId={user.Id}";
+                await _emailSender.SendEmailAsync(request.Email, "Confirm Email",
+                       $"""
                     <div>
                         <h1>Confirm Your Email</h1>
                         <p>Please click the verification link below to activate your account.</p>
                         <a href="{emailUrl}">Confirm Email</a>
                     </div>
                    """);
-
-            return new RegisterResponse()
+                return new Result<RegisterResponse>()
+                {
+                    Success = true,
+                    Message = "Registration successful",
+                    Data = new RegisterResponse()
+                    {
+                        Message = "Success"
+                    }
+                };
+            }
+            catch(Exception ex) 
             {
-                Message = "Success"
-            };
+                return new Result<RegisterResponse>
+                {
+                    Success = false,
+                    Message = ex.InnerException.Message,
+                    Data = null
+                };
+            }
         }
 
-        public async Task<bool> ConfirmEmail(ConfirmEmailRequest request)
+        public async Task <Result<bool>> ConfirmEmail(ConfirmEmailRequest request)
         {
-            var user = await _userManager.FindByIdAsync(request.UserId);
-            if (user is null) return false;
-            request.Token = Uri.UnescapeDataString(request.Token);
-            var result = await _userManager.ConfirmEmailAsync(user, request.Token);
-            if (!result.Succeeded) {
-                return false;
+            try
+            {
+                var user = await _userManager.FindByIdAsync(request.UserId);
+                if (user is null)
+                {
+                    return new Result<bool>
+                    {
+                        Success = false,
+                        Message = "User not founf",
+                        Data = false
+                    };
+                }
+                request.Token = Uri.UnescapeDataString(request.Token);
+                var result = await _userManager.ConfirmEmailAsync(user, request.Token);
+                if (!result.Succeeded)
+                {
+                    return new Result<bool>
+                    {
+                        Success = false,
+                        Message = "Failed to confirm email",
+                        Data = false
+                    };
+                }
+                return new Result<bool>
+                {
+                    Success = true,
+                    Message = "Email confirmed successfuly",
+                    Data = true
+                };
             }
-            return true;
+            catch (Exception ex)
+            {
+                return new Result<bool>
+                {
+                    Success = false,
+                    Message = ex.InnerException.Message,
+                    Data = false
+                };
+            }
         }
-        public async Task<LoginResponse> LoginAsync(LoginRequest request)
+        public async Task <Result<LoginResponse>> LoginAsync(LoginRequest request)
         {
-            var user = await _userManager.FindByEmailAsync(request.Email);
-            if (user is null)
+            try
             {
-                return new LoginResponse()
+                var user = await _userManager.FindByEmailAsync(request.Email);
+                if (user is null)
                 {
-                    Message = "Invalid Email"
+                    return new Result<LoginResponse>()
+                    {
+                        Success = false,
+                        Message = "Invalid Email",
+                    };
+                }
+                if (!await _userManager.IsEmailConfirmedAsync(user))
+                {
+                    return new Result<LoginResponse>()
+                    {
+                        Success = false,
+                        Message = "Email is not confirmed"
+                    };
+                }
+                var result = await _userManager.CheckPasswordAsync(user, request.Password);
+                if (!result)
+                {
+                    return new Result<LoginResponse>()
+                    {
+                        Success = false,
+                        Message = "Invalid Password"
+                    };
+                }
+                return new Result<LoginResponse>()
+                {
+                    Success = true,
+                    Message = "Success",
+                    Data = new LoginResponse()
+                    {
+                        Message = "Login successful",
+                        AccessToken = await GenerateJwt(user)
+                    }
                 };
             }
-            if (!await _userManager.IsEmailConfirmedAsync(user))
-            {
-                return new LoginResponse()
+            catch (Exception ex) {
+                return new Result<LoginResponse>()
                 {
-                    Message = "Email is not confirmed"
+                    Success = false,
+                    Message = ex.InnerException.Message
                 };
             }
-            var result = await _userManager.CheckPasswordAsync(user, request.Password);
-            if (!result)
-            {
-                return new LoginResponse()
-                {
-                    Message = "Invalid Password"
-                };
-            }
-            return new LoginResponse()
-            {
-                Message = "Success",
-                AccessToken = await GenerateJwt(user)
-            };
         }
 
         private async Task<String> GenerateJwt(ApplicationUser user)
