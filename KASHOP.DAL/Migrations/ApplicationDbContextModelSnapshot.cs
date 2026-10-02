@@ -183,6 +183,9 @@ namespace KASHOP.DAL.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
+                    b.Property<double>("Rate")
+                        .HasColumnType("float");
+
                     b.Property<string>("UpdatedById")
                         .HasColumnType("nvarchar(450)");
 

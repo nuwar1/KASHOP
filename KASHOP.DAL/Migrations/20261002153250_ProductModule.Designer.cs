@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KASHOP.DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260921194750_ProductModule")]
+    [Migration("20261002153250_ProductModule")]
     partial class ProductModule
     {
         /// <inheritdoc />
@@ -185,6 +185,9 @@ namespace KASHOP.DAL.Migrations
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
+
+                    b.Property<double>("Rate")
+                        .HasColumnType("float");
 
                     b.Property<string>("UpdatedById")
                         .HasColumnType("nvarchar(450)");

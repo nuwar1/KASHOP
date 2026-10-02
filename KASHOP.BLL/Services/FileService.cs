@@ -17,7 +17,7 @@ namespace KASHOP.BLL.Services
         {
             try
             {
-                if (file is not null || file.Length > 0)
+                if (file is null || file.Length < 0 )
                 {
                     return new Result<string>
                     {

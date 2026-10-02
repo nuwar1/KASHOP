@@ -46,6 +46,7 @@ namespace KASHOP.DAL.Migrations
                     Price = table.Column<decimal>(type: "decimal(6,2)", precision: 6, scale: 2, nullable: false),
                     Discount = table.Column<decimal>(type: "decimal(6,2)", precision: 6, scale: 2, nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false),
+                    Rate = table.Column<double>(type: "float", nullable: false),
                     MainImage = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CategoryId = table.Column<int>(type: "int", nullable: false),
                     CreatedById = table.Column<string>(type: "nvarchar(450)", nullable: false),
