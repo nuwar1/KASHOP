@@ -13,13 +13,14 @@ namespace KASHOP.BLL.Services
 {
     public class ProductService : IProductService
     {
-        private readonly IProductRepository _productRepository;
+
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IFileService _fileService;
 
-        public ProductService(IProductRepository productRepository, IFileService fileService)
+        public ProductService(IUnitOfWork unitOfWork, IFileService fileService)
         {
-            _productRepository = productRepository;
-            _fileService = fileService;
+            _unitOfWork = unitOfWork;
+            _fileService = fileService; 
         }
 
         public async Task<Result<ProductResponse>> CreateProduct(ProductRequest request)
@@ -39,14 +40,15 @@ namespace KASHOP.BLL.Services
             var product = request.Adapt<Product>();
             product.MainImage = uploadResult.Data;
 
-            await _productRepository.CreateAsync(product);
+            await _unitOfWork.ProductRepository.CreateAsync(product);
+            await _unitOfWork.CompleteAsync();
 
             return Result<ProductResponse>.OK(product.Adapt<ProductResponse>(), "Product created successfully");
         }
 
         public async Task<Result<List<ProductResponse>>> GetAllProducts()
         {
-            var products = await _productRepository.GetAllAsync(
+            var products = await _unitOfWork.ProductRepository.GetAllAsync(
                 new string[] { nameof(Product.ProductTranslations), nameof(Product.Category) });
 
             return Result<List<ProductResponse>>.OK(products.Adapt<List<ProductResponse>>());
@@ -55,7 +57,7 @@ namespace KASHOP.BLL.Services
         public async Task<Result<ProductResponse>> GetProduct(
             Expression<Func<Product, bool>> filter)
         {
-            var product = await _productRepository.GetOne(filter,
+            var product = await _unitOfWork.ProductRepository.GetOne(filter,
                           new string[] { nameof(Product.ProductTranslations), nameof(Product.Category) });
 
             if (product is null)

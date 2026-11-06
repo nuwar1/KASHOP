@@ -14,24 +14,25 @@ namespace KASHOP.BLL.Services
 {
     public class CategoryService : ICategoryService
     {
-        private readonly ICategoryRepository _categoryRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public CategoryService (ICategoryRepository categoryRepository)
+        public CategoryService (IUnitOfWork unitOfWork)
         {
-           _categoryRepository = categoryRepository;
+           _unitOfWork = unitOfWork;
         }
 
         public async Task<Result<CategoryResponse>> CreateCategory(CategoryRequest request)
         {
             var category = request.Adapt<Category>();
 
-            await _categoryRepository.CreateAsync(category);
+            await _unitOfWork.CategoryRepository.CreateAsync(category);
+            await _unitOfWork.CompleteAsync();
 
             return Result<CategoryResponse>.OK(category.Adapt<CategoryResponse>());
         }
         public async Task<Result<List<CategoryResponse>>> GetAllCategories()
         {
-            var categories = await _categoryRepository.GetAllAsync(
+            var categories = await _unitOfWork.CategoryRepository.GetAllAsync(
             new string[] { nameof(Category.CategoryTranslations) }
             );
 
@@ -40,7 +41,7 @@ namespace KASHOP.BLL.Services
         public async Task<Result<CategoryResponse>> GetCategory(
                     Expression<Func<Category, bool>> filter)
         {
-            var category = await _categoryRepository.GetOne(filter,
+            var category = await _unitOfWork.CategoryRepository.GetOne(filter,
                            new string[] { nameof(Category.CategoryTranslations) });
 
             if (category is null)
@@ -52,16 +53,17 @@ namespace KASHOP.BLL.Services
         }
         public async Task<Result<bool>> DeleteCategory(int id)
         {
-            var category = await _categoryRepository.GetOne(c => c.Id == id);
+            var category = await _unitOfWork.CategoryRepository.GetOne(c => c.Id == id);
 
             if (category is null)
             {
                 return Result<bool>.Fail("Category not found");
             }
 
-            var deleted = await _categoryRepository.DeleteAsync(category);
+            _unitOfWork.CategoryRepository.Delete(category);
+            var affectedRows = await _unitOfWork.CompleteAsync();
 
-            if (!deleted)
+            if (affectedRows == 0)
             {
                 return Result<bool>.Fail("Failed to delete category");
             }
@@ -71,7 +73,8 @@ namespace KASHOP.BLL.Services
 
         public async Task<Result<CategoryResponse>> UpdateCategory(int id, CategoryRequest request)
         {
-            var category = await _categoryRepository.GetOne(c => c.Id == id, new string[] { nameof(Category.CategoryTranslations) });
+            var category = await _unitOfWork.CategoryRepository.GetOne(c => c.Id == id, 
+                new string[] { nameof(Category.CategoryTranslations) });
 
             if (category is null)
             {
@@ -80,9 +83,10 @@ namespace KASHOP.BLL.Services
 
             request.Adapt(category);
 
-            var updatedCategory = await _categoryRepository.UpdateAsync(category);
+            _unitOfWork.CategoryRepository.Update(category);
+            await _unitOfWork.CompleteAsync();
 
-            return Result<CategoryResponse>.OK(updatedCategory.Adapt<CategoryResponse>(), "Category updated successfully");
+            return Result<CategoryResponse>.OK(category.Adapt<CategoryResponse>(), "Category updated successfully");
         }
     }
 }

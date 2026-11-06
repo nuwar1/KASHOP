@@ -20,7 +20,6 @@ namespace KASHOP.DAL.Repository
         public async Task<T> CreateAsync(T entity)
         {
             await _context.AddAsync(entity);
-            await _context.SaveChangesAsync();
             return entity;
         }
         public async Task<List<T>> GetAllAsync(string[]? includes = null)
@@ -50,17 +49,14 @@ namespace KASHOP.DAL.Repository
             return await query.FirstOrDefaultAsync(filter);
         }
 
-        public async Task<bool> DeleteAsync(T entity)
+        public void Delete(T entity)
         {
             _context.Remove(entity);
-            var affected = await _context.SaveChangesAsync();
-            return affected > 0;
         }
 
-        public async Task<T> UpdateAsync(T entity)
+        public T Update(T entity)
         {
             _context.Update(entity);
-            await _context.SaveChangesAsync();
             return entity;
         }
     }
