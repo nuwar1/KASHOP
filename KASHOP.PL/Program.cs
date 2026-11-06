@@ -36,8 +36,6 @@ namespace KASHOP.PL
                 app.MapOpenApi();
             }
 
-            app.UseStaticFiles();
-
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
