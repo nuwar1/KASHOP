@@ -24,67 +24,46 @@ namespace KASHOP.BLL.Services
 
         public async Task<Result<ProductResponse>> CreateProduct(ProductRequest request)
         {
-            try
+            if (request.MainImage is null)
             {
-                if (request.MainImage is null)
-                {
-                    return Result<ProductResponse>.Fail("Main image is required");
-                }
-
-                var uploadResult = await _fileService.UploadAsync(request.MainImage);
-
-                if (!uploadResult.Success)
-                {
-                    return Result<ProductResponse>.Fail(uploadResult.Message);
-                }
-
-                var product = request.Adapt<Product>();
-                product.MainImage = uploadResult.Data;
-
-                await _productRepository.CreateAsync(product);
-
-                return Result<ProductResponse>.OK(product.Adapt<ProductResponse>(), "Product created successfully");
+                return Result<ProductResponse>.Fail("Main image is required");
             }
-            catch (Exception ex)
+
+            var uploadResult = await _fileService.UploadAsync(request.MainImage);
+
+            if (!uploadResult.Success)
             {
-                return Result<ProductResponse>.Fail(ex.InnerException.Message);
+                return Result<ProductResponse>.Fail(uploadResult.Message);
             }
+
+            var product = request.Adapt<Product>();
+            product.MainImage = uploadResult.Data;
+
+            await _productRepository.CreateAsync(product);
+
+            return Result<ProductResponse>.OK(product.Adapt<ProductResponse>(), "Product created successfully");
         }
 
         public async Task<Result<List<ProductResponse>>> GetAllProducts()
         {
-            try
-            {
-                var products = await _productRepository.GetAllAsync(
-                    new string[]{nameof(Product.ProductTranslations),nameof(Product.Category)});
+            var products = await _productRepository.GetAllAsync(
+                new string[] { nameof(Product.ProductTranslations), nameof(Product.Category) });
 
-                return Result<List<ProductResponse>>.OK(products.Adapt<List<ProductResponse>>());
-            }
-            catch (Exception ex)
-            {
-                return Result<List<ProductResponse>>.Fail(ex.InnerException.Message);
-            }
+            return Result<List<ProductResponse>>.OK(products.Adapt<List<ProductResponse>>());
         }
 
         public async Task<Result<ProductResponse>> GetProduct(
             Expression<Func<Product, bool>> filter)
         {
-            try
-            {
-                var product = await _productRepository.GetOne(filter,
-                    new string[] {nameof(Product.ProductTranslations), nameof(Product.Category)});
+            var product = await _productRepository.GetOne(filter,
+                          new string[] { nameof(Product.ProductTranslations), nameof(Product.Category) });
 
-                if (product is null)
-                {
-                    return Result<ProductResponse>.Fail("Product not found");
-                }
-
-                return Result<ProductResponse>.OK(product.Adapt<ProductResponse>());
-            }
-            catch (Exception ex)
+            if (product is null)
             {
-                return Result<ProductResponse>.Fail(ex.InnerException.Message);
+                return Result<ProductResponse>.Fail("Product not found");
             }
+
+            return Result<ProductResponse>.OK(product.Adapt<ProductResponse>());
         }
     }
 }

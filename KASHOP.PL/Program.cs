@@ -26,6 +26,7 @@ namespace KASHOP.PL
 
             builder.Services.AddServices(builder.Configuration);
             var app = builder.Build();
+            app.UseExceptionHandler();
             app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value);
             MapsterConfig.MapsterConfigRegister();
 

@@ -8,6 +8,7 @@ namespace KASHOP.PL.Extentions
     public static class ApplicationServicesExtensions
     {
         public static IServiceCollection AddApplicationServises(this IServiceCollection services) {
+            services.AddExceptionHandler<GlobalExeptionHandler>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IProductRepository, ProductRepository>();
@@ -16,7 +17,7 @@ namespace KASHOP.PL.Extentions
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<ISeedData, RoleSeedData>();
             services.AddTransient<IEmailSender, EmailSender>();
-
+            services.AddProblemDetails();
             return services;
         }
     }
