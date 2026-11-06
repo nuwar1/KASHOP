@@ -8,6 +8,7 @@ using CloudinaryDotNet.Actions;
 using KASHOP.DAL.Dto;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Tokens;
 
 namespace KASHOP.BLL.Services
@@ -29,20 +30,20 @@ namespace KASHOP.BLL.Services
 
             _cloudinary = new Cloudinary(account);
         }
-        public async Task<Result<string>> UploadAsync(IFormFile file)
+        public async Task<Result<FileUploadResult>> UploadAsync(IFormFile file)
         {
             if (file is null || file.Length == 0)
             {
-                return Result<string>.Fail("No file was provided");
+                return Result<FileUploadResult>.Fail("No file was provided");
             }
             var extension = Path.GetExtension(file.FileName).ToLower();
             if (!_allowedExtensions.Contains(extension))
             {
-                return Result<string>.Fail($"File type {extension} is not allowed");
+                return Result<FileUploadResult>.Fail($"File type {extension} is not allowed");
             }
             if (file.Length > _maxFileSize)
             {
-                return Result<string>.Fail("File size exceeds 5MB limit");
+                return Result<FileUploadResult>.Fail("File size exceeds 5MB limit");
             }
 
             using(var stream = file.OpenReadStream())
@@ -57,12 +58,28 @@ namespace KASHOP.BLL.Services
 
                 if(uploadResult.Error != null)
                 {
-                    return Result<string>.Fail(uploadResult.Error.Message);
+                    return Result<FileUploadResult>.Fail(uploadResult.Error.Message);
                 }
 
-                return Result<string>.OK(uploadResult.SecureUrl.ToString(),
-                "File uploaded successfully");
+                return Result<FileUploadResult>.Ok(
+                    new FileUploadResult {
+                        Url = uploadResult.SecureUrl.ToString(),
+                        PublicId = uploadResult.PublicId
+                    },
+                    "File uploaded successfully");
             }
+        }
+
+        public async Task<Result<bool>> Delete(string publicId)
+        {
+            var deletionParams = new DeletionParams(publicId);
+            var result = await _cloudinary.DestroyAsync(deletionParams);
+
+            if(result.Result != "ok")
+            {
+                return Result<bool>.Fail("Failed to delete image from Cloudinary");
+            }
+            return Result<bool>.Ok(true);
         }
     }
 }

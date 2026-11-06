@@ -176,6 +176,10 @@ namespace KASHOP.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("MainImagePublicId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal>("Price")
                         .HasPrecision(6, 2)
                         .HasColumnType("decimal(6,2)");

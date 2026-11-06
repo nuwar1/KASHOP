@@ -38,12 +38,13 @@ namespace KASHOP.BLL.Services
             }
 
             var product = request.Adapt<Product>();
-            product.MainImage = uploadResult.Data;
+            product.MainImage = uploadResult.Data.Url;
+            product.MainImagePublicId = uploadResult.Data.PublicId;
 
             await _unitOfWork.ProductRepository.CreateAsync(product);
             await _unitOfWork.CompleteAsync();
 
-            return Result<ProductResponse>.OK(product.Adapt<ProductResponse>(), "Product created successfully");
+            return Result<ProductResponse>.Ok(product.Adapt<ProductResponse>(), "Product created successfully");
         }
 
         public async Task<Result<List<ProductResponse>>> GetAllProducts()
@@ -51,7 +52,7 @@ namespace KASHOP.BLL.Services
             var products = await _unitOfWork.ProductRepository.GetAllAsync(
                 new string[] { nameof(Product.ProductTranslations), nameof(Product.Category) });
 
-            return Result<List<ProductResponse>>.OK(products.Adapt<List<ProductResponse>>());
+            return Result<List<ProductResponse>>.Ok(products.Adapt<List<ProductResponse>>());
         }
 
         public async Task<Result<ProductResponse>> GetProduct(
@@ -65,7 +66,23 @@ namespace KASHOP.BLL.Services
                 return Result<ProductResponse>.Fail("Product not found");
             }
 
-            return Result<ProductResponse>.OK(product.Adapt<ProductResponse>());
+            return Result<ProductResponse>.Ok(product.Adapt<ProductResponse>());
+        }
+
+        public async Task<Result<bool>> DeleteProduct(int id)
+        {
+            var product = await _unitOfWork.ProductRepository.GetOne(p => p.Id == id);
+            if (product is null)
+                return Result<bool>.Fail("Product not found");
+
+            var deleteImageResult = await _fileService.Delete(product.MainImagePublicId);
+            if (!deleteImageResult.Success)
+                return Result<bool>.Fail($"{deleteImageResult.Message}");
+
+            _unitOfWork.ProductRepository.Delete(product);
+            var affectedRows = await _unitOfWork.CompleteAsync();
+
+            return affectedRows > 0 ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to delete product");
         }
     }
 }

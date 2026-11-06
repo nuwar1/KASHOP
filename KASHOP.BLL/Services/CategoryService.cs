@@ -28,7 +28,7 @@ namespace KASHOP.BLL.Services
             await _unitOfWork.CategoryRepository.CreateAsync(category);
             await _unitOfWork.CompleteAsync();
 
-            return Result<CategoryResponse>.OK(category.Adapt<CategoryResponse>());
+            return Result<CategoryResponse>.Ok(category.Adapt<CategoryResponse>());
         }
         public async Task<Result<List<CategoryResponse>>> GetAllCategories()
         {
@@ -36,7 +36,7 @@ namespace KASHOP.BLL.Services
             new string[] { nameof(Category.CategoryTranslations) }
             );
 
-            return Result<List<CategoryResponse>>.OK(categories.Adapt<List<CategoryResponse>>());
+            return Result<List<CategoryResponse>>.Ok(categories.Adapt<List<CategoryResponse>>());
         }
         public async Task<Result<CategoryResponse>> GetCategory(
                     Expression<Func<Category, bool>> filter)
@@ -49,7 +49,7 @@ namespace KASHOP.BLL.Services
                 return Result<CategoryResponse>.Fail("Category not found");
             }
 
-            return Result<CategoryResponse>.OK(category.Adapt<CategoryResponse>());
+            return Result<CategoryResponse>.Ok(category.Adapt<CategoryResponse>());
         }
         public async Task<Result<bool>> DeleteCategory(int id)
         {
@@ -68,7 +68,7 @@ namespace KASHOP.BLL.Services
                 return Result<bool>.Fail("Failed to delete category");
             }
 
-            return Result<bool>.OK(true, "Category deleted successfully");
+            return Result<bool>.Ok(true, "Category deleted successfully");
         }
 
         public async Task<Result<CategoryResponse>> UpdateCategory(int id, CategoryRequest request)
@@ -86,7 +86,7 @@ namespace KASHOP.BLL.Services
             _unitOfWork.CategoryRepository.Update(category);
             await _unitOfWork.CompleteAsync();
 
-            return Result<CategoryResponse>.OK(category.Adapt<CategoryResponse>(), "Category updated successfully");
+            return Result<CategoryResponse>.Ok(category.Adapt<CategoryResponse>(), "Category updated successfully");
         }
     }
 }

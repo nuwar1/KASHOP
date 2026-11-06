@@ -56,7 +56,7 @@ namespace KASHOP.BLL.Services
                         <a href="{emailUrl}">Confirm Email</a>
                     </div>
                    """);
-            return Result<RegisterResponse>.OK(new RegisterResponse
+            return Result<RegisterResponse>.Ok(new RegisterResponse
             {
                 Message = "Success"
             },
@@ -77,7 +77,7 @@ namespace KASHOP.BLL.Services
                 return Result<bool>.Fail("Failed to confirm email",
                                         result.Errors.Select(e => e.Description).ToList());
             }
-            return Result<bool>.OK(true, "Email confirmed successfully");
+            return Result<bool>.Ok(true, "Email confirmed successfully");
         }
         public async Task <Result<LoginResponse>> LoginAsync(LoginRequest request)
         {
@@ -95,7 +95,7 @@ namespace KASHOP.BLL.Services
             {
                 return Result<LoginResponse>.Fail("Invalid password");
             }
-            return Result<LoginResponse>.OK(
+            return Result<LoginResponse>.Ok(
                 new LoginResponse
                 {
                     Message = "Login successful",
