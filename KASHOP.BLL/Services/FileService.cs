@@ -19,28 +19,16 @@ namespace KASHOP.BLL.Services
             {
                 if (file is null || file.Length < 0 )
                 {
-                    return new Result<string>
-                    {
-                        Success = false,
-                        Message = "No file was provided"
-                    };
+                    return Result<string>.Fail("No file was provided");
                 }
                 var extension = Path.GetExtension(file.FileName).ToLower();
                 if (!_allowedExtensions.Contains(extension))
                 {
-                    return new Result<string>
-                    {
-                        Success = false,
-                        Message = $"File type {extension} is not allowed"
-                    };
+                    return Result<string>.Fail($"File type {extension} is not allowed");
                 }
                 if (file.Length > _maxFileSize)
                 {
-                    return new Result<string>
-                    {
-                        Success = false,
-                        Message = "File size exceeds 5MB limit"
-                    };
+                    return Result<string>.Fail("File size exceeds 5MB limit");
                 }
                 var fileName = Guid.NewGuid().ToString() + extension;
                 var filePath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", fileName);
@@ -48,21 +36,11 @@ namespace KASHOP.BLL.Services
                 {
                     await file.CopyToAsync(stream);
                 }
-                return new Result<string>
-                {
-                    Success = true,
-                    Message = "Success",
-                    Data = fileName
-                };
+                return Result<string>.OK(fileName,"File uploaded successfully");
             }
             catch (Exception ex) {
-                return new Result<string>
-                {
-                    Success = false,
-                    Message = ex.InnerException.Message
-                };
+                return Result<string>.Fail(ex.InnerException.Message);
             }
-            
         }
     }
 }

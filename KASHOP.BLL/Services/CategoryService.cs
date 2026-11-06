@@ -26,137 +26,97 @@ namespace KASHOP.BLL.Services
             try
             {
                 var category = request.Adapt<Category>();
+
                 await _categoryRepository.CreateAsync(category);
 
-                return new Result<CategoryResponse>
-                {
-                    Success = true,
-                    Message = "Success",
-                    Data = category.Adapt<CategoryResponse>()
-                };
+                return Result<CategoryResponse>.OK(category.Adapt<CategoryResponse>());
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                return new Result<CategoryResponse>
-                {
-                    Success = false,
-                    Message = ex.InnerException.Message
-                };
+                return Result<CategoryResponse>.Fail(ex.InnerException.Message);
             }
         }
-
         public async Task<Result<List<CategoryResponse>>> GetAllCategories()
         {
             try
             {
                 var categories = await _categoryRepository.GetAllAsync(
-                new string[] { nameof(Category.CategoryTranslations) }
+                    new string[]{nameof(Category.CategoryTranslations)}
                 );
 
-                return new Result<List<CategoryResponse>>
-                {
-                    Success = true,
-                    Message = "Success",
-                    Data = categories.Adapt<List<CategoryResponse>>()
-                };
-            } catch (Exception ex) {
-                return new Result<List<CategoryResponse>>() {
-                    Success = false,
-                    Message = ex.InnerException.Message
-                };
+                return Result<List<CategoryResponse>>.OK(categories.Adapt<List<CategoryResponse>>());
+            }
+            catch (Exception ex)
+            {
+                return Result<List<CategoryResponse>>.Fail(ex.InnerException.Message);
             }
         }
-
-        public async Task<Result<CategoryResponse>> GetCategory(Expression<Func<Category, bool>> filter)
+        public async Task<Result<CategoryResponse>> GetCategory(
+                    Expression<Func<Category, bool>> filter)
         {
             try
             {
-                var category = await _categoryRepository.GetOne(filter, new string[] { nameof(Category.CategoryTranslations) });
-                if (category is null) {
-                    return new Result<CategoryResponse>
-                    {
-                        Success = false,
-                        Message = "Category Not Found"
-                    };
+                var category = await _categoryRepository.GetOne(filter,
+                    new string[]{nameof(Category.CategoryTranslations)});
+
+                if (category is null)
+                {
+                    return Result<CategoryResponse>.Fail("Category not found");
                 }
-                return new Result<CategoryResponse>
-                {
-                    Success = true,
-                    Message = "Success",
-                    Data = category.Adapt<CategoryResponse>()
-                };
+
+                return Result<CategoryResponse>.OK(category.Adapt<CategoryResponse>());
             }
-            catch (Exception ex) {
-                return new Result<CategoryResponse>
-                {
-                    Success = false,
-                    Message = ex.InnerException.Message
-                };
-            } 
+            catch (Exception ex)
+            {
+                return Result<CategoryResponse>.Fail(ex.InnerException.Message);
+            }
         }
         public async Task<Result<bool>> DeleteCategory(int id)
         {
             try
             {
                 var category = await _categoryRepository.GetOne(c => c.Id == id);
+
                 if (category is null)
                 {
-                    return new Result<bool>
-                    {
-                        Success = false,
-                        Message = "Category Not Found",
-                        Data = false
-                    };
+                    return Result<bool>.Fail("Category not found");
                 }
+
                 var deleted = await _categoryRepository.DeleteAsync(category);
-                return new Result<bool>
+
+                if (!deleted)
                 {
-                    Success = deleted,
-                    Message = deleted? "Success" : "Faild to delete category",
-                    Data = deleted
-                };
+                    return Result<bool>.Fail("Failed to delete category");
+                }
+
+                return Result<bool>.OK(true,"Category deleted successfully");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                return new Result<bool>
-                {
-                    Success = false,
-                    Message = ex.InnerException.Message,
-                    Data = false
-                };
+                return Result<bool>.Fail(ex.InnerException.Message);
             }
         }
-                
+
         public async Task<Result<CategoryResponse>> UpdateCategory(int id, CategoryRequest request)
         {
             try
             {
-                var category = await _categoryRepository.GetOne(c => c.Id == id, new string[] { nameof(Category.CategoryTranslations) });
+                var category = await _categoryRepository.GetOne(c => c.Id == id, new string[] {nameof(Category.CategoryTranslations)});
 
                 if (category is null)
                 {
-                    return new Result<CategoryResponse>
-                    {
-                        Success = false,
-                        Message = "Category Not Found"
-                    };
+                    return Result<CategoryResponse>.Fail("Category not found");
                 }
+
                 request.Adapt(category);
+
                 var updatedCategory = await _categoryRepository.UpdateAsync(category);
-                return new Result<CategoryResponse>
-                {
-                    Success = true,
-                    Message = "Success",
-                    Data = updatedCategory.Adapt<CategoryResponse>()
-                };
+
+                return Result<CategoryResponse>.OK(updatedCategory.Adapt<CategoryResponse>(),"Category updated successfully");
             }
             catch(Exception ex)
             {
-                return new Result<CategoryResponse>
-                {
-                    Success = false,
-                    Message = ex.InnerException.Message
-                };
+                return Result<CategoryResponse>.Fail(ex.InnerException.Message);
             }
             
         }

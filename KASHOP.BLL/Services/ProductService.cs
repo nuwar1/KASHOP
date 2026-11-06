@@ -21,43 +21,33 @@ namespace KASHOP.BLL.Services
             _productRepository = productRepository;
             _fileService = fileService;
         }
+
         public async Task<Result<ProductResponse>> CreateProduct(ProductRequest request)
         {
             try
             {
-                if(request.MainImage is null)
+                if (request.MainImage is null)
                 {
-                    return new Result<ProductResponse>()
-                    {
-                        Success = false,
-                        Message = "Main image is required"
-                    };
+                    return Result<ProductResponse>.Fail("Main image is required");
                 }
 
                 var uploadResult = await _fileService.UploadAsync(request.MainImage);
+
                 if (!uploadResult.Success)
                 {
-                    return new Result<ProductResponse>()
-                    {
-                        Success = false,
-                        Message = uploadResult.Message
-                    };
+                    return Result<ProductResponse>.Fail(uploadResult.Message);
                 }
 
                 var product = request.Adapt<Product>();
                 product.MainImage = uploadResult.Data;
+
                 await _productRepository.CreateAsync(product);
-                return new Result<ProductResponse>()
-                {
-                    Success = true,
-                    Message = "Success",
-                };
-            }catch (Exception ex) {
-                return new Result<ProductResponse>()
-                {
-                    Success = false,
-                    Message = ex.InnerException.Message
-                };
+
+                return Result<ProductResponse>.OK(product.Adapt<ProductResponse>(), "Product created successfully");
+            }
+            catch (Exception ex)
+            {
+                return Result<ProductResponse>.Fail(ex.InnerException.Message);
             }
         }
 
@@ -65,53 +55,35 @@ namespace KASHOP.BLL.Services
         {
             try
             {
-                var products = await _productRepository.GetAllAsync( new string[] { nameof(Product.ProductTranslations), nameof(Product.Category) } );
-                return new Result<List<ProductResponse>>()
-                {
-                    Success = true,
-                    Message = "Success",
-                    Data = products.Adapt<List<ProductResponse>>()
-                };
+                var products = await _productRepository.GetAllAsync(
+                    new string[]{nameof(Product.ProductTranslations),nameof(Product.Category)});
+
+                return Result<List<ProductResponse>>.OK(products.Adapt<List<ProductResponse>>());
             }
-            catch (Exception ex) {
-                return new Result<List<ProductResponse>>()
-                {
-                    Success = false,
-                    Message = ex.InnerException.Message
-                };
+            catch (Exception ex)
+            {
+                return Result<List<ProductResponse>>.Fail(ex.InnerException.Message);
             }
         }
 
-        public async Task<Result<ProductResponse>> GetProduct(Expression<Func<Product, bool>> filter)
+        public async Task<Result<ProductResponse>> GetProduct(
+            Expression<Func<Product, bool>> filter)
         {
             try
             {
                 var product = await _productRepository.GetOne(filter,
-                    new string[] { nameof(Product.ProductTranslations), nameof(Product.Category) });
+                    new string[] {nameof(Product.ProductTranslations), nameof(Product.Category)});
 
                 if (product is null)
                 {
-                    return new Result<ProductResponse>()
-                    {
-                        Success = false,
-                        Message = "Product Not Found"
-                    };
+                    return Result<ProductResponse>.Fail("Product not found");
                 }
-                    
-                return new Result<ProductResponse>()
-                {
-                    Success = true,
-                    Message = "Success",
-                    Data = product.Adapt<ProductResponse>()
-                };
+
+                return Result<ProductResponse>.OK(product.Adapt<ProductResponse>());
             }
             catch (Exception ex)
             {
-                return new Result<ProductResponse>()
-                {
-                    Success = false,
-                    Message = ex.InnerException.Message
-                };
+                return Result<ProductResponse>.Fail(ex.InnerException.Message);
             }
         }
     }

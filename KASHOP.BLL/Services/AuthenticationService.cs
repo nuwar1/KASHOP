@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core;
 using KASHOP.BLL.Common;
 using KASHOP.DAL.Dto;
 using KASHOP.DAL.Models;
@@ -16,6 +17,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace KASHOP.BLL.Services
 {
@@ -39,15 +41,11 @@ namespace KASHOP.BLL.Services
                 var result = await _userManager.CreateAsync(user, request.Password);
                 if (!result.Succeeded)
                 {
-                    return new Result<RegisterResponse>()
-                    {
-                        Success = false,
-                        Message = "Failed to register",
-                        Data = new RegisterResponse() {
-                            Message = "Error",
-                            Errors = result.Errors.Select(e => e.Description).ToList()
-                        }
-                    };
+                    var errors = result.Errors
+                        .Select(e => e.Description)
+                        .ToList();
+
+                    return Result<RegisterResponse>.Fail("Failed to register", errors);
                 }
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 token = Uri.EscapeDataString(token);
@@ -60,24 +58,13 @@ namespace KASHOP.BLL.Services
                         <a href="{emailUrl}">Confirm Email</a>
                     </div>
                    """);
-                return new Result<RegisterResponse>()
-                {
-                    Success = true,
-                    Message = "Registration successful",
-                    Data = new RegisterResponse()
-                    {
-                        Message = "Success"
-                    }
-                };
+                return Result<RegisterResponse>.OK(new RegisterResponse{
+                    Message = "Success"},
+                    "Registration successful");
             }
             catch(Exception ex) 
             {
-                return new Result<RegisterResponse>
-                {
-                    Success = false,
-                    Message = ex.InnerException.Message,
-                    Data = null
-                };
+                return Result<RegisterResponse>.Fail(ex.InnerException.Message);
             }
         }
 
@@ -88,39 +75,20 @@ namespace KASHOP.BLL.Services
                 var user = await _userManager.FindByIdAsync(request.UserId);
                 if (user is null)
                 {
-                    return new Result<bool>
-                    {
-                        Success = false,
-                        Message = "User not founf",
-                        Data = false
-                    };
+                    return Result<bool>.Fail("User not found");
                 }
                 request.Token = Uri.UnescapeDataString(request.Token);
                 var result = await _userManager.ConfirmEmailAsync(user, request.Token);
                 if (!result.Succeeded)
                 {
-                    return new Result<bool>
-                    {
-                        Success = false,
-                        Message = "Failed to confirm email",
-                        Data = false
-                    };
+                    return Result<bool>.Fail("Failed to confirm email",
+                                            result.Errors.Select(e => e.Description).ToList());
                 }
-                return new Result<bool>
-                {
-                    Success = true,
-                    Message = "Email confirmed successfuly",
-                    Data = true
-                };
+                return Result<bool>.OK(true, "Email confirmed successfully");
             }
             catch (Exception ex)
             {
-                return new Result<bool>
-                {
-                    Success = false,
-                    Message = ex.InnerException.Message,
-                    Data = false
-                };
+                return Result<bool>.Fail(ex.InnerException.Message);
             }
         }
         public async Task <Result<LoginResponse>> LoginAsync(LoginRequest request)
@@ -130,50 +98,31 @@ namespace KASHOP.BLL.Services
                 var user = await _userManager.FindByEmailAsync(request.Email);
                 if (user is null)
                 {
-                    return new Result<LoginResponse>()
-                    {
-                        Success = false,
-                        Message = "Invalid Email",
-                    };
+                    return Result<LoginResponse>.Fail("Invalid email");
                 }
                 if (!await _userManager.IsEmailConfirmedAsync(user))
                 {
-                    return new Result<LoginResponse>()
-                    {
-                        Success = false,
-                        Message = "Email is not confirmed"
-                    };
+                    return Result<LoginResponse>.Fail("Email is not confirmed");
                 }
                 var result = await _userManager.CheckPasswordAsync(user, request.Password);
                 if (!result)
                 {
-                    return new Result<LoginResponse>()
-                    {
-                        Success = false,
-                        Message = "Invalid Password"
-                    };
+                    return Result<LoginResponse>.Fail("Invalid password");
                 }
-                return new Result<LoginResponse>()
-                {
-                    Success = true,
-                    Message = "Success",
-                    Data = new LoginResponse()
+                return Result<LoginResponse>.OK(
+                    new LoginResponse
                     {
                         Message = "Login successful",
                         AccessToken = await GenerateJwt(user)
-                    }
-                };
+                    },
+                    "Login successful"
+                );
             }
             catch (Exception ex) {
-                return new Result<LoginResponse>()
-                {
-                    Success = false,
-                    Message = ex.InnerException.Message
-                };
+                return Result<LoginResponse>.Fail(ex.InnerException.Message);
             }
         }
-
-        private async Task<String> GenerateJwt(ApplicationUser user)
+        private async Task<string> GenerateJwt(ApplicationUser user)
         {
             var roles = _userManager.GetRolesAsync(user);
             var userClaims = new List<Claim>
@@ -195,6 +144,5 @@ namespace KASHOP.BLL.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-
     }
 }
