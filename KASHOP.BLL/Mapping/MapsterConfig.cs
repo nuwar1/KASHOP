@@ -15,8 +15,15 @@ namespace KASHOP.BLL.Mapping
         public static void MapsterConfigRegister()
         {
             TypeAdapterConfig<Category, CategoryResponse>.NewConfig()
-            .Map(dist => dist.Name, src => src.CategoryTranslations.Where(t => t.Language == CultureInfo.CurrentUICulture.Name)
+            .Map(dest => dest.Name, src => src.CategoryTranslations.Where(t => t.Language == CultureInfo.CurrentUICulture.Name)
             .Select(t => t.Name).FirstOrDefault());
+
+            TypeAdapterConfig<Product, ProductResponse>.NewConfig()
+            .Map(dest => dest.Name, src => src.ProductTranslations.Where(t => t.Language == CultureInfo.CurrentUICulture.Name)
+            .Select(t => t.Name).FirstOrDefault())
+            .Map(dest => dest.Description, src => src.ProductTranslations.Where(t => t.Language == CultureInfo.CurrentUICulture.Name)
+            .Select(t => t.Description).FirstOrDefault())
+            .Map(dest => dest.MainImage, src => $"/images/{src.MainImage}");
         }
     }
 }

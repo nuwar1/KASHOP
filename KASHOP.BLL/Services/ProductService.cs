@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using KASHOP.DAL.Dto;
@@ -52,6 +53,60 @@ namespace KASHOP.BLL.Services
                     Message = "Success",
                 };
             }catch (Exception ex) {
+                return new Result<ProductResponse>()
+                {
+                    Success = false,
+                    Message = ex.InnerException.Message
+                };
+            }
+        }
+
+        public async Task<Result<List<ProductResponse>>> GetAllProducts()
+        {
+            try
+            {
+                var products = await _productRepository.GetAllAsync( new string[] { nameof(Product.ProductTranslations), nameof(Product.Category) } );
+                return new Result<List<ProductResponse>>()
+                {
+                    Success = true,
+                    Message = "Success",
+                    Data = products.Adapt<List<ProductResponse>>()
+                };
+            }
+            catch (Exception ex) {
+                return new Result<List<ProductResponse>>()
+                {
+                    Success = false,
+                    Message = ex.InnerException.Message
+                };
+            }
+        }
+
+        public async Task<Result<ProductResponse>> GetProduct(Expression<Func<Product, bool>> filter)
+        {
+            try
+            {
+                var product = await _productRepository.GetOne(filter,
+                    new string[] { nameof(Product.ProductTranslations), nameof(Product.Category) });
+
+                if (product is null)
+                {
+                    return new Result<ProductResponse>()
+                    {
+                        Success = false,
+                        Message = "Product Not Found"
+                    };
+                }
+                    
+                return new Result<ProductResponse>()
+                {
+                    Success = true,
+                    Message = "Success",
+                    Data = product.Adapt<ProductResponse>()
+                };
+            }
+            catch (Exception ex)
+            {
                 return new Result<ProductResponse>()
                 {
                     Success = false,
